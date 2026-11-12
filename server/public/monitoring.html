@@ -1,0 +1,498 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Community Connect | Backend Control Center</title>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f6f2;
+      color: #183d31;
+    }
+
+    header {
+      background: #124b39;
+      color: white;
+      padding: 22px 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    header h1 { font-size: 21px; }
+    header p { color: #c6dfd2; font-size: 12px; margin-top: 5px; }
+
+    .status {
+      background: #d9f7e5;
+      color: #17643c;
+      border-radius: 30px;
+      padding: 8px 13px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    main { max-width: 1400px; margin: auto; padding: 30px 5%; }
+
+    .heading { margin-bottom: 25px; }
+    .heading h2 { font-size: 27px; margin-bottom: 8px; }
+    .muted { color: #718078; font-size: 13px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 25px;
+    }
+
+    .card, .panel {
+      background: white;
+      border: 1px solid #e6e9e1;
+      border-radius: 13px;
+      padding: 21px;
+      box-shadow: 0 3px 12px #183d3108;
+    }
+
+    .card p { color: #718078; font-size: 13px; }
+    .card h3 { font-size: 30px; margin-top: 13px; }
+    .green { color: #16834f; }
+    .red { color: #c34435; }
+
+    .columns {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .panel h3 { margin-bottom: 18px; font-size: 17px; }
+
+    .health-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px 0;
+      border-bottom: 1px solid #edf0e9;
+      font-size: 13px;
+    }
+
+    .health-item:last-child { border: 0; }
+
+    .online { color: #16834f; font-weight: bold; }
+    .offline { color: #c34435; font-weight: bold; }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 650px;
+      font-size: 13px;
+    }
+
+    th {
+      background: #f5f7f2;
+      color: #627168;
+      text-align: left;
+      padding: 13px;
+    }
+
+    td {
+      padding: 14px 13px;
+      border-bottom: 1px solid #edf0e9;
+    }
+
+    .method {
+      display: inline-block;
+      padding: 5px 8px;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 11px;
+      background: #e8f0e9;
+      color: #145c45;
+    }
+
+    .method.POST { background: #e5efff; color: #2457a7; }
+    .method.PATCH, .method.PUT { background: #fff1dc; color: #9a5b12; }
+    .method.DELETE { background: #ffebeb; color: #b83232; }
+
+    .code {
+      font-weight: bold;
+      color: #16834f;
+    }
+
+    .code.error { color: #c34435; }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: #124b39;
+      color: white;
+      border: 0;
+      padding: 10px 15px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button.secondary { background: #e9eee8; color: #124b39; }
+
+    input {
+      padding: 11px;
+      border: 1px solid #dce2d9;
+      border-radius: 7px;
+      min-width: 220px;
+    }
+
+    .login {
+      max-width: 410px;
+      margin: 65px auto;
+      background: white;
+      border: 1px solid #e6e9e1;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 35px #183d3110;
+    }
+
+    .login h2 { margin-bottom: 10px; }
+    .login p { color: #718078; font-size: 13px; line-height: 1.6; }
+    .login input { width: 100%; margin-top: 15px; }
+    .login button { width: 100%; margin-top: 15px; }
+    #loginError { color: #c34435; margin-top: 12px; }
+
+    #dashboard { display: none; }
+    #lastUpdated { font-size: 12px; color: #718078; }
+
+    footer {
+      text-align: center;
+      padding: 25px;
+      color: #8b968e;
+      font-size: 12px;
+    }
+
+    @media (max-width: 850px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .columns { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+      .card { padding: 15px; }
+      .card h3 { font-size: 24px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div>
+      <h1>Community Connect Pakistan</h1>
+      <p>Backend Control Center · API Monitoring</p>
+    </div>
+    <div class="status" id="connectionStatus">Checking server...</div>
+  </header>
+
+  <section id="loginSection" class="login">
+    <h2>Backend Administrator Login</h2>
+    <p>Sign in using your configured administrator credentials to access backend monitoring.</p>
+
+    <form id="loginForm">
+      <input id="email" type="email" placeholder="Administrator email" required />
+      <input id="password" type="password" placeholder="Administrator password" required />
+      <button type="submit" id="loginButton">Sign In</button>
+    </form>
+
+    <p id="loginError"></p>
+  </section>
+
+  <main id="dashboard">
+    <div class="heading">
+      <h2>Backend Overview</h2>
+      <p class="muted">Monitor API traffic, database connectivity and server performance.</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <p>Total API Requests</p>
+        <h3 id="totalRequests">0</h3>
+      </div>
+      <div class="card">
+        <p>Successful Requests</p>
+        <h3 class="green" id="successfulRequests">0</h3>
+      </div>
+      <div class="card">
+        <p>Failed Requests</p>
+        <h3 class="red" id="failedRequests">0</h3>
+      </div>
+      <div class="card">
+        <p>Average Response Time</p>
+        <h3 id="averageResponse">0 ms</h3>
+      </div>
+    </div>
+
+    <div class="columns">
+      <section class="panel">
+        <h3>System Health</h3>
+        <div class="health-item">
+          <span>Express Backend</span>
+          <strong class="online" id="serverHealth">Checking...</strong>
+        </div>
+        <div class="health-item">
+          <span>MongoDB</span>
+          <strong id="databaseHealth">Checking...</strong>
+        </div>
+        <div class="health-item">
+          <span>Server Uptime</span>
+          <strong id="uptime">--</strong>
+        </div>
+        <div class="health-item">
+          <span>Node.js Version</span>
+          <strong id="nodeVersion">--</strong>
+        </div>
+        <div class="health-item">
+          <span>Memory Usage</span>
+          <strong id="memoryUsage">--</strong>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h3>Monitoring Controls</h3>
+        <p class="muted">Dashboard refreshes automatically every five seconds.</p>
+        <br />
+        <p id="lastUpdated">Waiting for data...</p>
+        <br />
+        <button onclick="refreshDashboard()">Refresh Now</button>
+        <button class="secondary" onclick="logout()" style="margin-top:10px">Sign Out</button>
+      </section>
+    </div>
+
+    <section class="panel">
+      <div class="toolbar">
+        <div>
+          <h3 style="margin-bottom:5px">API Request Monitor</h3>
+          <p class="muted">Latest requests received by your backend.</p>
+        </div>
+        <input id="searchInput" placeholder="Search endpoint..." oninput="renderLogs()" />
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Endpoint</th>
+              <th>Status</th>
+              <th>Response</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="logsTable">
+            <tr><td colspan="5">Loading API requests...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>Community Connect Pakistan · Private Backend Monitoring</footer>
+
+  <script>
+    let token = sessionStorage.getItem("backendMonitorToken") || "";
+    let logs = [];
+    let refreshTimer = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    function showDashboard() {
+      $("loginSection").style.display = "none";
+      $("dashboard").style.display = "block";
+      $("connectionStatus").textContent = "MONITORING ACTIVE";
+      $("connectionStatus").className = "status";
+    }
+
+    async function apiFetch(endpoint) {
+      const response = await fetch(endpoint, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.status === 401) {
+        logout();
+        throw new Error("Your login session expired.");
+      }
+
+      if (!response.ok) {
+        throw new Error(`Request failed: ${response.status}`);
+      }
+
+      return response.json();
+    }
+
+    $("loginForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const button = $("loginButton");
+      button.disabled = true;
+      button.textContent = "Signing in...";
+      $("loginError").textContent = "";
+
+      try {
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: $("email").value.trim(),
+            password: $("password").value
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success || !data.token) {
+          throw new Error(data.message || "Invalid administrator credentials.");
+        }
+
+        token = data.token;
+        sessionStorage.setItem("backendMonitorToken", token);
+
+        $("password").value = "";
+        showDashboard();
+        await refreshDashboard();
+
+        refreshTimer = setInterval(refreshDashboard, 5000);
+      } catch (error) {
+        $("loginError").textContent = error.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = "Sign In";
+      }
+    });
+
+    function formatUptime(seconds) {
+      const days = Math.floor(seconds / 86400);
+      const hours = Math.floor((seconds % 86400) / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      return `${days}d ${hours}h ${minutes}m`;
+    }
+
+    async function refreshDashboard() {
+      try {
+        const [statsData, logsData, healthResponse] = await Promise.all([
+          apiFetch("/api/monitoring/stats"),
+          apiFetch("/api/monitoring/logs"),
+          fetch("/api/health")
+        ]);
+
+        if (!healthResponse.ok) throw new Error("Backend health check failed.");
+
+        const health = await healthResponse.json();
+        const stats = statsData.stats;
+        const server = statsData.server;
+
+        $("totalRequests").textContent = stats.totalRequests;
+        $("successfulRequests").textContent = stats.successfulRequests;
+        $("failedRequests").textContent = stats.failedRequests;
+        $("averageResponse").textContent = stats.averageResponseTime + " ms";
+
+        $("serverHealth").textContent = health.success ? "ONLINE" : "OFFLINE";
+        $("serverHealth").className = health.success ? "online" : "offline";
+
+        $("databaseHealth").textContent =
+          health.database?.status || "Not reported";
+
+        $("databaseHealth").className =
+          health.database?.status === "Connected" ? "online" : "offline";
+
+        $("uptime").textContent = formatUptime(server.uptime);
+        $("nodeVersion").textContent = server.nodeVersion;
+
+        const memory = server.memoryUsage;
+        $("memoryUsage").textContent =
+          (memory.heapUsed / 1024 / 1024).toFixed(1) +
+          " MB / " +
+          (memory.heapTotal / 1024 / 1024).toFixed(1) +
+          " MB";
+
+        logs = logsData.logs || [];
+        renderLogs();
+
+        $("lastUpdated").textContent =
+          "Last updated: " + new Date().toLocaleTimeString();
+
+        $("connectionStatus").textContent = "SERVER ONLINE";
+      } catch (error) {
+        $("connectionStatus").textContent = "CONNECTION ERROR";
+        $("connectionStatus").style.background = "#fee2e2";
+        $("connectionStatus").style.color = "#b83232";
+        console.error(error);
+      }
+    }
+
+    function renderLogs() {
+      const search = $("searchInput").value.toLowerCase();
+
+      const filtered = logs.filter((log) =>
+        log.path.toLowerCase().includes(search) ||
+        log.method.toLowerCase().includes(search)
+      );
+
+      $("logsTable").innerHTML = filtered.length
+        ? filtered.map((log) => {
+            const failed = log.statusCode >= 400;
+
+            return `
+              <tr>
+                <td><span class="method ${log.method}">${log.method}</span></td>
+                <td>${escapeHTML(log.path)}</td>
+                <td><span class="code ${failed ? "error" : ""}">${log.statusCode}</span></td>
+                <td>${log.responseTime} ms</td>
+                <td>${new Date(log.timestamp).toLocaleTimeString()}</td>
+              </tr>
+            `;
+          }).join("")
+        : '<tr><td colspan="5">No matching API requests found.</td></tr>';
+    }
+
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
+    }
+
+    function logout() {
+      token = "";
+      sessionStorage.removeItem("backendMonitorToken");
+
+      if (refreshTimer) clearInterval(refreshTimer);
+
+      $("dashboard").style.display = "none";
+      $("loginSection").style.display = "block";
+      $("connectionStatus").textContent = "LOGIN REQUIRED";
+      $("connectionStatus").className = "status";
+    }
+
+    if (token) {
+      showDashboard();
+      refreshDashboard().then(() => {
+        if (token) refreshTimer = setInterval(refreshDashboard, 5000);
+      });
+    }
+  </script>
+</body>
+</html>
